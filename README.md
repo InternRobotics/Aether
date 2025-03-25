@@ -1,13 +1,15 @@
 <div align="center">
+  <img width="400" alt="image" src="assets/logo_zheng.png">
+  <!-- <br> -->
+</div>
+
+<div align="center">
 
 # Aether: Geometric-Aware Unified World Modeling
 
 </div>
 
-<div align="center">
-  <img width="400" alt="image" src="assets/logo.png">
-  <!-- <br> -->
-</div>
+
 
 <div align="center">
 <a href='https://arxiv.org/abs/2503.18945'><img src='https://img.shields.io/badge/arXiv-2503.18945-red'></a> &nbsp;
