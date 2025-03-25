@@ -10,9 +10,9 @@
 </div>
 
 <div align="center">
-<a href=''><img src='https://img.shields.io/badge/arXiv-Coming%20Soon-red'></a> &nbsp;
+<a href='https://arxiv.org/abs/2503.18945'><img src='https://img.shields.io/badge/arXiv-2503.18945-red'></a> &nbsp;
 <a href='https://aether-world.github.io'><img src='https://img.shields.io/badge/Project-Page-Green'></a> &nbsp;
-<a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue'></a> &nbsp;
+<a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo%20(Coming%20Soon)-blue'></a> &nbsp;
 </div>
 
 Aether addresses a fundamental challenge in AI: integrating geometric reconstruction with generative modeling 
@@ -30,10 +30,10 @@ If you find this work useful in your research, please consider citing:
 
 ```bibtex
 @article{aether,
-    title={Aether: Geometric-Aware Unified World Modeling},
-    author={Aether Team, Haoyi Zhu, Yifan Wang, Jianjun Zhou, Wenzheng Chang, Yang Zhou, Zizun Li, Junyi Chen, Chunhua Shen, Jiangmiao Pang, Tong He},
-    year={2025},
-    journal={arXiv preprint arXiv:placeholder}
+  title     = {Aether: Geometric-Aware Unified World Modeling},
+  author    = {Aether Team and Haoyi Zhu and Yifan Wang and Jianjun Zhou and Wenzheng Chang and Yang Zhou and Zizun Li and Junyi Chen and Chunhua Shen and Jiangmiao Pang and Tong He},
+  journal   = {arXiv preprint arXiv:2503.18945},
+  year      = {2025}
 }
 ```
 
