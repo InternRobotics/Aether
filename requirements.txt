@@ -27,6 +27,7 @@ scipy>=1.15.0
 sentencepiece>=0.2.0
 six>=1.17.0
 tokenizers>=0.21.0
+torch>=2.5.1
 torchaudio>=2.5.1
 torchmetrics>=1.6.1
 torchvision>=0.20.1
