@@ -13,7 +13,7 @@
 <a href='https://arxiv.org/abs/2503.18945'><img src='https://img.shields.io/badge/arXiv-2503.18945-red'></a> &nbsp;
 <a href='https://aether-world.github.io'><img src='https://img.shields.io/badge/Project-Page-Green'></a> &nbsp;
 <a href='https://huggingface.co/AetherWorldModel/AetherV1'><img src='https://img.shields.io/badge/Model-Weights-yellow'></a> &nbsp;
-<a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo%20(Coming%20Soon)-blue'></a> &nbsp;
+<a href='https://huggingface.co/spaces/AmberHeart/AetherV1'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo%20-blue'></a> &nbsp;
 </div>
 
 Aether addresses a fundamental challenge in AI: integrating geometric reconstruction with generative modeling 
@@ -27,7 +27,9 @@ synthetic data, Aether achieves strong zero-shot generalization to real-world sc
 
 :partying_face: **NEWS**: 
 
-- *Mar. 2025:* AetherV1 is released! Model checkpoints, paper, website, and inference code are all available.
+- *Mar.31st 2025:* The Gradio demo is available! You can deploy locally or experience Aether online on Hugging Face.
+
+- *Mar.28th 2025:* AetherV1 is released! Model checkpoints, paper, website, and inference code are all available.
 
 
 ## :hammer: Installation
@@ -70,7 +72,14 @@ Results will be saved in `./outputs/` by default.
 
 ### Run inference demo with Gradio
 
-Coming soon.
+The Gradio demo provides an interactive web-based Aether experience.
+
+```shell
+python scripts/demo_gradio.py
+```
+
+Our local testing environment is deployed using an A100 GPU with 80GB of memory, and it is set to run on the local port 7860 by default.
+
 
 ## :pencil: Citation
 If you find this work useful in your research, please consider citing:

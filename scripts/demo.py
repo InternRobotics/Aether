@@ -435,19 +435,51 @@ def save_output(
 
     if pointmap is None:
         assert raymap is not None, "Raymap is required for saving pointmap."
-        pointmap_dict = postprocess_pointmap(
-            disparity,
-            raymap,
-            vae_downsample_scale=8,
-            ray_o_scale_inv=0.1,
-            smooth_camera=args.smooth_camera,
-            smooth_method=args.smooth_method,
+        window_result = AetherV1PipelineOutput(
+            rgb=rgb, disparity=disparity, raymap=raymap
         )
-        pointmap = pointmap_dict["pointmap"]
+        window_results = [window_result]
+        window_indices = [0]
+        _, _, poses_from_blend, pointmap = blend_and_merge_window_results(
+            window_results, window_indices, args
+        )
+
+        # Use poses from blend_and_merge_window_results if poses is None
+        if poses is None:
+            poses = poses_from_blend
 
     if poses is None:
         assert raymap is not None, "Raymap is required for saving poses."
         poses, _, _ = raymap_to_poses(raymap, ray_o_scale_inv=0.1)
+
+    # Fix the problem of point cloud being upside down and left-right reversed
+    # Flip Y axis and X axis for both pointmap and camera poses
+    flipped_pointmap = pointmap.copy()
+    flipped_pointmap[..., 1] = -flipped_pointmap[..., 1]  # flip Y axis (up and down)
+    flipped_pointmap[..., 0] = -flipped_pointmap[..., 0]  # flip X axis (left and right)
+
+    # Flip camera poses
+    flipped_poses = poses.copy()
+    # Flip Y axis and X axis of camera orientation
+    flipped_poses[..., 1, :3] = -flipped_poses[
+        ..., 1, :3
+    ]  # flip Y axis of camera orientation
+    flipped_poses[..., 0, :3] = -flipped_poses[
+        ..., 0, :3
+    ]  # flip X axis of camera orientation
+    flipped_poses[..., :3, 1] = -flipped_poses[
+        ..., :3, 1
+    ]  # flip Y axis of camera orientation
+    flipped_poses[..., :3, 0] = -flipped_poses[
+        ..., :3, 0
+    ]  # flip X axis of camera orientation
+    # Flip Y axis and X axis of camera position
+    flipped_poses[..., 1, 3] = -flipped_poses[..., 1, 3]  # flip Y axis position
+    flipped_poses[..., 0, 3] = -flipped_poses[..., 0, 3]  # flip X axis position
+
+    # Use the flipped versions for output
+    pointmap = flipped_pointmap
+    poses = flipped_poses
 
     if args.task == "reconstruction":
         filename = f"reconstruction_{args.video.split('/')[-1].split('.')[0]}"
