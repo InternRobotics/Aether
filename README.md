@@ -28,7 +28,6 @@ synthetic data, Aether achieves strong zero-shot generalization to real-world sc
 :partying_face: **NEWS**: 
 
 - *Mar.31st 2025:* The Gradio demo is available! You can deploy locally or experience Aether online on Hugging Face.
-
 - *Mar.28th 2025:* AetherV1 is released! Model checkpoints, paper, website, and inference code are all available.
 
 
