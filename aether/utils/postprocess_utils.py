@@ -10,6 +10,24 @@ from einops import rearrange
 from plyfile import PlyData, PlyElement
 
 
+def signed_log1p(x):
+    """
+    Computes log(1 + abs(x)) while keeping the original sign of x.
+
+    Args:
+        x (torch.Tensor): Input tensor.
+
+    Returns:
+        torch.Tensor: Transformed tensor with the same sign as x.
+    """
+    if isinstance(x, torch.Tensor):
+        return torch.sign(x) * torch.log1p(torch.abs(x))
+    elif isinstance(x, np.ndarray):
+        return np.sign(x) * np.log1p(np.abs(x))
+    else:
+        raise TypeError("Input must be a torch.Tensor or numpy.ndarray")
+
+
 def signed_log1p_inverse(x):
     """
     Computes the inverse of signed_log1p: x = sign(x) * (exp(abs(x)) - 1).
@@ -840,3 +858,126 @@ def compute_scale(prediction, target, mask):
     scale[valid] = numerator[valid] / denominator[valid]
 
     return scale.item()
+
+
+def get_raymap_from_camera_parameters(
+    intrinsic,
+    camera_pose,
+    H,
+    W,
+    vae_downsample=8,
+    align_corners=True,
+):
+    def get_raymap_from_trans2d(intrinsic, H, W):
+        fu = intrinsic[:, 0, 0].unsqueeze(-1).unsqueeze(-1)
+        fv = intrinsic[:, 1, 1].unsqueeze(-1).unsqueeze(-1)
+        cu = intrinsic[:, 0, 2].unsqueeze(-1).unsqueeze(-1)
+        cv = intrinsic[:, 1, 2].unsqueeze(-1).unsqueeze(-1)
+
+        u, v = torch.meshgrid(torch.arange(W), torch.arange(H), indexing="xy")
+        u = u.unsqueeze(0).repeat(intrinsic.shape[0], 1, 1).to(intrinsic.device)
+        v = v.unsqueeze(0).repeat(intrinsic.shape[0], 1, 1).to(intrinsic.device)
+
+        z_cam = torch.ones_like(u).to(intrinsic.device)
+        x_cam = (u - cu) / fu
+        y_cam = (v - cv) / fv
+        addition_dim = torch.ones_like(u).to(intrinsic.device)
+        return torch.stack((x_cam, y_cam, z_cam, addition_dim), dim=-1)
+
+    raymap_cam = get_raymap_from_trans2d(intrinsic, H, W).to(camera_pose.device)
+
+    T, raymap_cam_h, raymap_cam_w, _ = raymap_cam.shape
+    raymap_cam = rearrange(raymap_cam, "t h w c -> t c (h w)")
+
+    _camera_pose = camera_pose.clone()
+    _camera_pose[:, :3, 3] = 0.0
+    raymap_world = torch.bmm(_camera_pose, raymap_cam)
+    raymap_world = rearrange(
+        raymap_world, "t c (h w) -> t c h w", h=raymap_cam_h, w=raymap_cam_w
+    )
+
+    if vae_downsample != 1:
+        raymap_world = F.interpolate(
+            raymap_world,
+            scale_factor=1 / vae_downsample,
+            mode="bilinear",
+            align_corners=align_corners,
+        )
+    raymap_world = raymap_world[:, :3]
+    ray_o = torch.ones_like(raymap_world).to(raymap_world.device) * camera_pose[
+        :, :3, 3
+    ].unsqueeze(-1).unsqueeze(-1)
+
+    raymap_world = torch.cat([raymap_world, ray_o], dim=1)
+    return raymap_world
+
+
+def camera_pose_to_raymap(
+    camera_pose,
+    intrinsic,
+    ray_o_scale_factor: float = 10.0,
+    dmax: float = 1.0,
+    H: int = 480,
+    W: int = 720,
+    vae_downsample: int = 8,
+    align_corners: bool = False,
+) -> np.ndarray:
+    """
+    Convert camera pose to raymap.
+
+    Args:
+        camera_pose: (N, 4, 4) camera poses
+        intrinsic: (N, 3, 3) intrinsics
+        ray_o_scale_factor: A constant scale factor for ray_o to avoid too large translation values.
+            Default to 10.0. If you use pre-trained AetherV1 model, you should always set it to 10.0.
+        dmax: A constant scale factor for ray_d to avoid too large translation values.
+            It should be equal to the maximum disparity value (before sqrt) of the sequence
+            if you have ground truth disparity. Default to 1.0.
+    Returns:
+        (N, 6, H, W) raymap
+    """
+    is_numpy = isinstance(camera_pose, np.ndarray)
+    if is_numpy:
+        camera_pose = torch.from_numpy(camera_pose).float()
+        intrinsic = torch.from_numpy(intrinsic).float()
+    scale_factor = 1.0 / dmax
+    camera_pose[:, :3, 3] = signed_log1p(
+        camera_pose[:, :3, 3] / scale_factor * ray_o_scale_factor
+    )
+    raymap = get_raymap_from_camera_parameters(
+        intrinsic,
+        camera_pose,
+        H,
+        W,
+        vae_downsample,
+        align_corners,
+    )
+    if is_numpy:
+        raymap = raymap.cpu().numpy()
+    return raymap
+
+
+def depth_to_disparity(depth, sqrt_disparity=True):
+    """Convert depth to disparity.
+
+    Args:
+        depth: (N, H, W) depth map
+        sqrt_disparity (bool, optional): Whether to take the square root of the disparity.
+            Defaults to True.
+    Returns:
+        (N, H, W) disparity map
+    """
+    is_numpy = isinstance(depth, np.ndarray)
+    if is_numpy:
+        depth = torch.from_numpy(depth).float()
+    disparity = 1.0 / depth
+    valid_disparity = disparity[depth > 1e-6]
+    dmax = valid_disparity.max()
+    disparity = torch.clamp(disparity / dmax, min=0.0, max=1.0)
+
+    if sqrt_disparity:
+        disparity = torch.sqrt(disparity)
+
+    if is_numpy:
+        disparity = disparity.cpu().numpy()
+    return disparity, dmax

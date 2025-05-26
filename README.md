@@ -79,6 +79,34 @@ python scripts/demo_gradio.py
 
 Our local testing environment is deployed using an A100 GPU with 80GB of memory, and it is set to run on the local port 7860 by default.
 
+### Inference with your own raymap action
+
+Suppose you have a sequence of camera poses, you have to convert it to raymap action trajectories before inference with Aether.
+You can use the `camera_pose_to_raymap` function in [postprocess_utils.py](aether/utils/postprocess_utils.py).
+
+```python
+# suppose you have the ground-truth depth values:
+disparity = 1. / depth[depth > 0]
+dmax = disparity.max()
+# otherwise, you can set dmax to 1.0 by default:
+dmax = 1.0
+
+# then suppose we have a camera trajectory
+# camera_pose: shape of (N, 4, 4), e.g. N = 41
+# intrinsic: shape of (N, 3, 3), e.g. N = 41
+from aether.utils.postprocess_utils import camera_pose_to_raymap
+
+# we will get a raymap sequence of shape (N, 6, h, w) 
+# where h = image height // 8 and w = image width // 8
+raymap = camera_pose_to_raymap(camera_pose=camera_pose, intrinsic=intrinsic, dmax=dmax)
+
+# save the raymap
+np.save("/path/to/your/raymap.npy", raymap)
+```
+
+
+
+
 
 ## :pencil: Citation
 If you find this work useful in your research, please consider citing:
