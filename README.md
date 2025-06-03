@@ -27,6 +27,7 @@ synthetic data, Aether achieves strong zero-shot generalization to real-world sc
 
 :partying_face: **NEWS**: 
 
+- *Jun.3rd 2025:* [DeepVerse](https://github.com/SOTAMak1r/DeepVerse) is released! It is a 4D auto-regressive world model. Check it out!
 - *Mar.31st 2025:* The Gradio demo is available! You can deploy locally or experience Aether online on Hugging Face.
 - *Mar.28th 2025:* AetherV1 is released! Model checkpoints, paper, website, and inference code are all available.
 
