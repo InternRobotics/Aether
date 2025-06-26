@@ -27,6 +27,7 @@ synthetic data, Aether achieves strong zero-shot generalization to real-world sc
 
 :partying_face: **NEWS**: 
 
+- *Jun.26th 2025:* Aether is accepted by ICCV 2025!
 - *Jun.3rd 2025:* [DeepVerse](https://github.com/SOTAMak1r/DeepVerse) is released! It is a 4D auto-regressive world model. Check it out!
 - *Mar.31st 2025:* The Gradio demo is available! You can deploy locally or experience Aether online on Hugging Face.
 - *Mar.28th 2025:* AetherV1 is released! Model checkpoints, paper, website, and inference code are all available.
@@ -82,7 +83,8 @@ Our local testing environment is deployed using an A100 GPU with 80GB of memory,
 
 ### Inference with your own raymap action
 
-Suppose you have a sequence of camera poses, you have to convert it to raymap action trajectories before inference with Aether.
+Suppose you have a sequence of camera poses, you have to convert it to raymap action trajectories before inference with Aether. 
+Note that your camera poses should be within the coordinate system of the first frame.
 You can use the `camera_pose_to_raymap` function in [postprocess_utils.py](aether/utils/postprocess_utils.py).
 
 ```python
