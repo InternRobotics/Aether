@@ -157,3 +157,5 @@ configs/local/default.yaml
 logs
 .gradio_cache
 outputs
+eval_results/
+data

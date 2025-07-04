@@ -52,6 +52,10 @@ pip install -r requirements.txt
 
 ## :rocket: Inference
 
+> ***Warning***: When doing reconstruction, Aether pipeline automatically centers crop the input video if its size does not match 480x720. 
+Therefore, for evaluation purpose, we have to slide a 480p window both on the spatial and temporal dimensions, 
+and blend all windows' outputs both spatially and temporally. An example of video depth evaluation on Sintel, KITTI, and BONN can be found at [evaluation/](evaluation/).
+
 ### Run inference demo locally
 
 - 4D reconstruction:
@@ -84,7 +88,7 @@ Our local testing environment is deployed using an A100 GPU with 80GB of memory,
 ### Inference with your own raymap action
 
 Suppose you have a sequence of camera poses, you have to convert it to raymap action trajectories before inference with Aether. 
-Note that your camera poses should be within the coordinate system of the first frame.
+Note that your camera poses should be **within the camera coordinate system of the first frame**.
 You can use the `camera_pose_to_raymap` function in [postprocess_utils.py](aether/utils/postprocess_utils.py).
 
 ```python
