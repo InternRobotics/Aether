@@ -54,7 +54,7 @@ pip install -r requirements.txt
 
 > ***Warning***: When doing reconstruction, Aether pipeline automatically centers crop the input video if its size does not match 480x720. 
 Therefore, for evaluation purpose, we have to slide a 480p window both on the spatial and temporal dimensions, 
-and blend all windows' outputs both spatially and temporally. An example of video depth evaluation on Sintel, KITTI, and BONN can be found at [evaluation/](evaluation/).
+and blend all windows' outputs both spatially and temporally. Examples of video depth and camera pose evaluation can be found at [evaluation/](evaluation/).
 
 ### Run inference demo locally
 
