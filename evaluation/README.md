@@ -11,3 +11,18 @@ bash evaluation/video_depth/run_aether.sh
 ```
 
 The outputs and results can be then found under `eval_results/`.
+
+## Relative Camera Pose
+
+First, you have install the `evo` package:
+```console
+pip install evo
+```
+
+Make sure you have `tum`, `sintel`, and `scannetv2` folders under `data/`.
+
+```console
+bash evaluation/rel_pose/run_aether.sh
+```
+
+The outputs and results can be then found under `eval_results/`.

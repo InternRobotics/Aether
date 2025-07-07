@@ -116,6 +116,10 @@ def get_rays(pose, h, w, focal=None, fovx=None, fovy=None):
     cx = w * 0.5
     cy = h * 0.5
     intrinsics, focal = get_intrinsics(pose.shape[0], h, w, fovx, fovy, focal)
+
+    if isinstance(focal, float):
+        focal = np.array([focal])
+
     focal = torch.from_numpy(focal).float()
     camera_dirs = F.pad(
         torch.stack(

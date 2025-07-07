@@ -4,8 +4,8 @@ import os
 
 import cv2
 import imageio.v3 as iio
-import matplotlib
 import numpy as np
+import rootutils
 import torch
 from accelerate import Accelerator, PartialState
 from diffusers import (
@@ -16,8 +16,19 @@ from diffusers import (
 from tqdm import tqdm
 from transformers import AutoTokenizer, T5EncoderModel
 
-from aether.pipelines.aetherv1_pipeline_cogvideox import AetherV1PipelineCogVideoX
-from evaluation.video_depth.metadata import dataset_metadata
+
+rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
+
+from aether.pipelines.aetherv1_pipeline_cogvideox import (  # noqa: E402
+    AetherV1PipelineCogVideoX,
+)
+
+# noqa: E402
+from aether.utils.postprocess_utils import (  # noqa: E402
+    colorize_depth,
+    compute_scale,
+)
+from evaluation.video_depth.metadata import dataset_metadata  # noqa: E402
 
 
 def get_args_parser():
@@ -65,36 +76,6 @@ def get_args_parser():
         help="random seed",
     )
     return parser
-
-
-def colorize_depth(depth, cmap="Spectral"):
-    min_d, max_d = (depth[depth > 0]).min(), (depth[depth > 0]).max()
-    depth = (max_d - depth) / (max_d - min_d)
-
-    cm = matplotlib.colormaps[cmap]
-    depth = depth.clip(0, 1)
-    depth = cm(depth, bytes=False)[..., 0:3]
-    return depth
-
-
-def compute_scale(prediction, target, mask):
-    if isinstance(prediction, np.ndarray):
-        prediction = torch.from_numpy(prediction).float()
-    if isinstance(target, np.ndarray):
-        target = torch.from_numpy(target).float()
-    if isinstance(mask, np.ndarray):
-        mask = torch.from_numpy(mask).bool()
-
-    numerator = torch.sum(mask * prediction * target, (1, 2))
-    denominator = torch.sum(mask * prediction * prediction, (1, 2))
-
-    scale = torch.zeros_like(numerator)
-
-    valid = (denominator != 0).nonzero()
-
-    scale[valid] = numerator[valid] / denominator[valid]
-
-    return scale.item()
 
 
 def process_with_sliding_window(
@@ -198,20 +179,26 @@ def process_with_sliding_window(
                 reshape_dims = (1, -1, overlap) if is_horizontal else (1, overlap, -1)
 
                 scale = compute_scale(
-                    window_disparity[:, :, :overlap].reshape(*reshape_dims)
-                    if is_horizontal
-                    else window_disparity[:, :overlap, :].reshape(*reshape_dims),
-                    final_spatial_disparity[:, :, -overlap:].reshape(*reshape_dims)
-                    if is_horizontal
-                    else final_spatial_disparity[:, -overlap:, :].reshape(
-                        *reshape_dims
+                    (
+                        window_disparity[:, :, :overlap].reshape(*reshape_dims)
+                        if is_horizontal
+                        else window_disparity[:, :overlap, :].reshape(*reshape_dims)
                     ),
-                    np.ones_like(final_spatial_disparity[:, :, -overlap:]).reshape(
-                        *reshape_dims
-                    )
-                    if is_horizontal
-                    else np.ones_like(final_spatial_disparity[:, -overlap:, :]).reshape(
-                        *reshape_dims
+                    (
+                        final_spatial_disparity[:, :, -overlap:].reshape(*reshape_dims)
+                        if is_horizontal
+                        else final_spatial_disparity[:, -overlap:, :].reshape(
+                            *reshape_dims
+                        )
+                    ),
+                    (
+                        np.ones_like(final_spatial_disparity[:, :, -overlap:]).reshape(
+                            *reshape_dims
+                        )
+                        if is_horizontal
+                        else np.ones_like(
+                            final_spatial_disparity[:, -overlap:, :]
+                        ).reshape(*reshape_dims)
                     ),
                 )
                 window_disparity_aligned = scale * window_disparity
@@ -417,8 +404,7 @@ def prepare_input(img_paths):
 
 
 if __name__ == "__main__":
-    args = get_args_parser()
-    args = args.parse_args()
+    args = get_args_parser().parse_args()
 
     if args.eval_dataset == "sintel":
         args.full_seq = True
