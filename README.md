@@ -27,6 +27,7 @@ synthetic data, Aether achieves strong zero-shot generalization to real-world sc
 
 :partying_face: **NEWS**: 
 
+- *Oct.22nd 2025:* Aether won the **Outstanding Paper Award** at the ICCV 2025 RIWM workshop!
 - *Jun.26th 2025:* Aether is accepted by ICCV 2025!
 - *Jun.3rd 2025:* [DeepVerse](https://github.com/SOTAMak1r/DeepVerse) is released! It is a 4D auto-regressive world model. Check it out!
 - *Mar.31st 2025:* The Gradio demo is available! You can deploy locally or experience Aether online on Hugging Face.
